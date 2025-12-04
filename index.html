@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Page Assistant Chatbot</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for better appearance */
+        .chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-area::-webkit-scrollbar-thumb {
+            background-color: #9ca3af;
+            border-radius: 4px;
+        }
+        .chat-area::-webkit-scrollbar-track {
+            background-color: #f3f4f6;
+        }
+        /* Ensures the whole screen is used for the chat interface */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Prevent body scroll */
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="max-w-xl mx-auto w-full shadow-2xl bg-white">
+        <!-- Header -->
+        <header class="p-4 bg-gray-900 text-white shadow-md flex items-center justify-between">
+            <h1 class="text-xl font-bold">🤖 GitHub Assistant</h1>
+            <span class="text-sm font-light text-gray-400">Powered by Gemini</span>
+        </header>
+
+        <!-- Chat Display Area -->
+        <main id="chat-area" class="flex-grow p-4 overflow-y-auto chat-area space-y-4">
+            <!-- Initial welcome message -->
+            <div class="flex justify-start">
+                <div class="bg-blue-100 text-gray-800 p-3 rounded-xl rounded-tl-none max-w-xs md:max-w-md shadow-md">
+                    <p>Hello! I'm your website's AI assistant. Ask me anything about this GitHub page or the projects hosted here.</p>
+                </div>
+            </div>
+            <!-- Messages will be injected here -->
+        </main>
+
+        <!-- Input Area (Fixed Footer) -->
+        <footer class="p-4 border-t bg-gray-50 shadow-inner">
+            <div class="flex space-x-2">
+                <input
+                    type="text"
+                    id="user-input"
+                    placeholder="Type your message..."
+                    class="flex-grow p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                    aria-label="Chat input"
+                    onkeydown="if(event.key === 'Enter') sendMessage()"
+                />
+                <button
+                    id="send-button"
+                    onclick="sendMessage()"
+                    class="bg-blue-600 text-white p-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-150 shadow-lg disabled:bg-gray-400 flex items-center justify-center"
+                >
+                    <svg id="send-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                    <svg id="loading-spinner" class="animate-spin w-5 h-5 text-white hidden" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Global variables provided by the environment
+        const apiKey = ""; // API key is handled by the Canvas environment
+
+        const chatArea = document.getElementById('chat-area');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const sendIcon = document.getElementById('send-icon');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        // --- UI Utility Functions ---
+
+        /**
+         * Scrolls the chat area to the bottom.
+         */
+        function scrollToBottom() {
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        /**
+         * Creates and appends a message bubble to the chat area.
+         * @param {string} text - The message content.
+         * @param {string} sender - 'user' or 'ai'.
+         */
+        function appendMessage(text, sender) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `p-3 rounded-xl max-w-xs md:max-w-md shadow-md transition duration-300 ${
+                sender === 'user'
+                    ? 'bg-blue-600 text-white rounded-br-none'
+                    : 'bg-gray-200 text-gray-800 rounded-tl-none'
+            }`;
+
+            // Basic Markdown to HTML conversion (e.g., bold, italics)
+            let formattedText = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/(\r\n|\n|\r)/g, '<br>'); // Handle new lines
+
+            messageBubble.innerHTML = formattedText;
+            messageWrapper.appendChild(messageBubble);
+            chatArea.appendChild(messageWrapper);
+            scrollToBottom();
+        }
+
+        /**
+         * Toggles the loading state for the input and button.
+         * @param {boolean} isLoading - True to show loading, false to hide.
+         */
+        function setLoading(isLoading) {
+            userInput.disabled = isLoading;
+            sendButton.disabled = isLoading;
+            if (isLoading) {
+                sendIcon.classList.add('hidden');
+                loadingSpinner.classList.remove('hidden');
+            } else {
+                sendIcon.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        // --- Core Logic ---
+
+        /**
+         * Calls the Gemini API with exponential backoff.
+         * @param {string} query - The user's query.
+         * @param {number} retries - Current retry count (starts at 0).
+         */
+        async function fetchGeminiResponse(query, retries = 0) {
+            const maxRetries = 5;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            // Define the persona and task for the chatbot
+            const systemPrompt = "You are a helpful and friendly AI assistant for a developer's GitHub website. Your purpose is to answer questions about the projects, skills, or content displayed on this page. Be concise, professional, and encouraging. Do not mention the API or models used. Keep responses under 100 words.";
+
+            const payload = {
+                contents: [{ parts: [{ text: query }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 429 && retries < maxRetries) {
+                    const delay = Math.pow(2, retries) * 1000 + Math.random() * 1000;
+                    console.warn(`Rate limit hit. Retrying in ${Math.round(delay / 1000)}s...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchGeminiResponse(query, retries + 1); // Recursive retry
+                }
+
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!text) {
+                     return "I'm sorry, I received an empty or malformed response from the server. Could you try phrasing that differently?";
+                }
+
+                return text;
+
+            } catch (error) {
+                console.error("Error fetching Gemini response:", error);
+                return `An error occurred: ${error.message}. Please check the console for details.`;
+            }
+        }
+
+        /**
+         * Main function to handle sending a message.
+         */
+        async function sendMessage() {
+            const query = userInput.value.trim();
+            if (!query) return;
+
+            // 1. Clear input and show user message
+            userInput.value = '';
+            appendMessage(query, 'user');
+
+            // 2. Set loading state
+            setLoading(true);
+
+            // 3. Fetch AI response
+            const aiResponse = await fetchGeminiResponse(query);
+
+            // 4. Hide loading state and show AI response
+            setLoading(false);
+            appendMessage(aiResponse, 'ai');
+        }
+
+    </script>
+</body>
+</html>
+
+

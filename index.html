@@ -81,8 +81,10 @@
     </div>
 
     <script>
-        // Global variables provided by the environment
-        const apiKey = ""; // API key is handled by the Canvas environment
+        // NOTE: The API key is set to an empty string. If you export this file and run
+        // it outside of a secure environment, you MUST replace the empty quotes
+        // with your actual Gemini API Key to resolve the 403 error.
+        const apiKey = "AIzaSyBKyX1C2c1SXQqmIoE7sTH2IkVbyvPf8Lg"; 
 
         const chatArea = document.getElementById('chat-area');
         const userInput = document.getElementById('user-input');
@@ -179,6 +181,9 @@
                 }
 
                 if (!response.ok) {
+                    // Log the error detail
+                    const errorBody = await response.text();
+                    console.error(`API Call Error (${response.status}):`, errorBody);
                     throw new Error(`API call failed with status: ${response.status}`);
                 }
 

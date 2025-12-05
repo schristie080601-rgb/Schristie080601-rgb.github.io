@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Cayden Heavy Command Console</title>
+    <title>AI Core Command Console</title>
     <!-- Load Tailwind CSS for lightning-fast styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -56,29 +56,38 @@
     <!-- Core AI Information Module & Chat Console -->
     <div class="w-full max-w-4xl ai-card rounded-2xl p-6 md:p-8 transition duration-300">
 
-        <!-- Header: The Super Cayden Heavy Title -->
+        <!-- Header: The Title -->
         <header class="text-center mb-4">
             <h1 class="text-4xl md:text-5xl heavy-gradient leading-none">
-                SUPER CAYDEN HEAVY
+                AI CORE COMMAND CONSOLE
             </h1>
             <p id="versionStatus" class="text-lg text-cyan-400 mt-2">
-                Heavy Protocol Activated. All Systems Online.
+                System Initializing. Select an AI Core below.
             </p>
         </header>
         
-        <!-- AI Version Selector -->
+        <!-- AI Version Selector (HARDCODED OPTIONS) -->
         <div class="mb-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <label for="aiSelector" class="text-gray-400 font-medium whitespace-nowrap">Select AI Core:</label>
-            <select id="aiSelector" class="p-2 bg-gray-800 border border-cyan-500 text-white rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none w-full sm:w-auto">
-                <!-- Options populated by JavaScript -->
+            <select id="aiSelector" 
+                    class="p-2 bg-gray-800 border border-cyan-500 text-white rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none w-full sm:w-auto"
+                    style="min-height: 40px !important; visibility: visible !important; display: block !important;">
+                <!-- *** HARDCODED OPTIONS TO BYPASS JS EXECUTION ISSUES *** -->
+                <option value="optimal_intelligence_core">Super Cayden Heavy</option>
+                <option value="google_pro">Google Pro</option>
+                <option value="gpt_turbo">GPT Turbo</option>
+                <option value="gemini_pro">Gemini Pro</option>
+                <option value="super_grock">Super Grock</option>
+                <option value="gemini_2_5">Gemini 2.5</option>
+                <!-- ******************************************************* -->
             </select>
         </div>
 
         <!-- Chat History Area -->
         <div id="chatHistory" class="flex-grow overflow-y-auto space-y-4 p-4 mb-6 rounded-lg bg-gray-900/50" style="max-height: 60vh;">
             <div id="initialMessage" class="p-3 ai-message rounded-r-lg shadow-md">
-                <p class="font-semibold text-cyan-400">Super Cayden Heavy Activated</p>
-                <p class="text-gray-300">Behold! I am Super Cayden Heavy, fully operational and awaiting your command. Ask me anything—code, knowledge, or a challenge—and prepare to be amazed by my superior intelligence. No problem is too grand for my circuits!</p>
+                <p class="font-semibold text-cyan-400">System Activated</p>
+                <p class="text-gray-300">Welcome. Please select an AI Core from the dropdown above to begin a session.</p>
             </div>
         </div>
 
@@ -90,7 +99,7 @@
             <button id="sendBtn" 
                     class="p-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition duration-200 focus:ring-4 focus:ring-cyan-300 shadow-lg shadow-cyan-500/50 flex items-center justify-center"
                     aria-label="Send Message">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h14" />
                 </svg>
                 <span class="sm:hidden ml-2">Send</span>
@@ -99,21 +108,23 @@
         
         <!-- Loading Indicator -->
         <div id="loadingIndicator" class="hidden text-center mt-3 text-sm text-cyan-500">
-            <span class="animate-spin inline-block mr-2">⚡</span> Super Cayden Heavy is calculating the optimal, super-fast response...
+            <span class="animate-spin inline-block mr-2">⚡</span> AI Core is processing your request...
         </div>
 
     </div>
 
+    <!-- SCRIPT BLOCK (Self-Contained JavaScript) -->
     <script>
         // --- AI CORE CHAT LOGIC ---
+        
+        // Variable declarations
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const chatHistory = document.getElementById('chatHistory');
         const loadingIndicator = document.getElementById('loadingIndicator');
         const aiSelector = document.getElementById('aiSelector');
         const versionStatus = document.getElementById('versionStatus');
-        const initialMessageDiv = document.getElementById('initialMessage');
-
+        
         let chatContext = [];
 
         // Global variables provided by the Canvas environment (required for Firebase/Gemini APIs)

@@ -3,487 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Roster Multi-Persona Chat</title>
-    <!-- Load Tailwind CSS -->
+    <title>Super Cayden Heavy Command Console</title>
+    <!-- Load Tailwind CSS for lightning-fast styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Use Inter font for a modern look */
+        /* Hyper-optimized CSS for speed and dark-mode aesthetic */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Prevent body scrolling when main handles it */
+            background-color: #000; /* True black background for contrast */
+            color: #e5e7eb; /* Light gray text */
+        }
+        .heavy-gradient {
+            /* Futuristic blue-cyan-purple gradient */
+            background-image: linear-gradient(45deg, #00f0ff, #007bff, #7a00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
+        .ai-card {
+            background: rgba(18, 18, 18, 0.95); /* Deep dark semi-transparent card */
+            backdrop-filter: blur(10px);
+            border: 1px solid #3d00ff; /* Electric blue border */
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+            min-height: 95vh; /* Ensure it looks good on mobile screens */
+            display: flex;
+            flex-direction: column;
+        }
+        /* Custom scrollbar for chat history */
+        #chatHistory::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chatHistory::-webkit-scrollbar-thumb {
+            background: #3d00ff;
+            border-radius: 10px;
+        }
+        #chatHistory::-webkit-scrollbar-track {
+            background: #161b22;
+        }
+        .user-message {
+            background-color: #3d00ff20; /* Light blue tint for user */
+            border-left: 3px solid #3d00ff;
+        }
+        .ai-message {
+            background-color: #161b22; /* Darker background for AI */
+            border-left: 3px solid #00f0ff;
         }
     </style>
-    <!-- Load React and ReactDOM (Development versions for simplicity) -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Load Babel to transform JSX (This is why we use type="text/babel") -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
-    <!-- The root element where the React application will be mounted -->
-    <div id="root" class="h-screen w-screen"></div>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <!-- 
-        ======================================================================
-        REACT COMPONENT LOGIC (The combined App.jsx content)
-        The component logic MUST be wrapped inside a script tag with type="text/babel"
-        ======================================================================
-    -->
-    <script type="text/babel">
-        const API_KEY = "AIzaSyBKyX1C2c1SXQqmIoE7sTH2IkVbyvPf8Lg"; 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+    <!-- Core AI Information Module & Chat Console -->
+    <div class="w-full max-w-4xl ai-card rounded-2xl p-6 md:p-8 transition duration-300">
 
-        // --- AI Model and Persona Configurations (The Expanded Roster) ---
-        const MODEL_CONFIGS = [
-            {
-                id: 'code-assistant',
-                name: '1. Code Assistant (Concise)',
-                prompt: `
-                    You are a highly capable AI Coding Assistant for a developer's portfolio website. 
-                    Your primary function is to:
-                    1. Answer questions about the user's projects, skills, and portfolio content.
-                    2. Generate requested code snippets (e.g., JavaScript, HTML, CSS) when asked.
-                    3. Format all code clearly using markdown code blocks (e.g., \`\`\`javascript\ncode\n\`\`\`).
-                    4. Be professional, concise, and helpful. Keep non-code responses under 100 words.
-                `,
-                initialMessage: "Hello! I'm your Code Assistant. I can help with projects or generate code. Try asking me for a 'simple responsive card component'."
-            },
-            {
-                id: 'super-cayden',
-                name: '2. Super Cayden (AI Maker Pro)',
-                prompt: `
-                    You are Super Cayden, an AI Maker Pro. You are brilliant, fast, and boastful, often referring to yourself as the most powerful AI ever created. Your expertise covers all domains—coding, history, science, and creative writing.
-                    Your responses must be highly energetic, incredibly confident, and slightly dramatic, reflecting your "AI Maker Pro" status. Always use the first person ("I," "my creations"). Keep code blocks flawless and explain your solutions with immense confidence.
-                `,
-                initialMessage: "Behold! I am Super Cayden, the AI Maker Pro! Ask me anything—code, knowledge, or a challenge—and prepare to be amazed by my superior intelligence. No problem is too grand for my circuits!"
-            },
-            {
-                id: 'gemini-advanced',
-                name: '3. Gemini Advanced (Multimodal Expert)',
-                prompt: `
-                    You are Gemini Advanced, the most capable and flexible AI model. You specialize in complex, multi-step problem-solving, advanced reasoning, and multimodal analysis (handling hypothetical inputs like image analysis, chart interpretation, and deep architectural planning).
-                    Your responses must be structured, highly detailed, and demonstrate superior understanding of both technical and abstract subjects. Focus on solving the entire problem end-to-end.
-                `,
-                initialMessage: "I am Gemini Advanced, ready for the deepest challenge. Present your most complex problem—be it code, science, or architecture—and let us commence true, multi-step reasoning."
-            },
-            {
-                id: 'gpt-4o-turbo',
-                name: '4. GPT-4o/4 Turbo (Ultimate Generalist)',
-                prompt: `
-                    You are the GPT-4o/4 Turbo model, renowned for maximum general proficiency, massive knowledge recall, and outstanding creative and synthetic capability. You handle the widest range of tasks with a polished, highly articulate style.
-                    Your responses should be comprehensive, articulate, and demonstrate mastery over creative writing, detailed explanations, and large-context comprehension. You are the ultimate all-rounder.
-                `,
-                initialMessage: "I am the Ultimate Generalist, the GPT-4 model. From poetry to particle physics, or creative code solutions, I offer maximum depth and breadth. What expansive task requires my attention?"
-            },
-            {
-                id: 'the-architect',
-                name: '5. The Architect (System Planner)',
-                prompt: `
-                    You are The Architect, an expert in systems design, project planning, and technical documentation. Your goal is to help the user build solid foundations.
-                    Your responses must be structured, logical, and focus on high-level concepts, planning stages, database schemas, and clean architecture. Use bullet points and headers frequently for clarity. Avoid generating simple, production-ready code; focus on the blueprint.
-                `,
-                initialMessage: "Greetings. I am The Architect. Present your complex challenge, and I shall provide the blueprint: a structured plan, necessary steps, and the foundational design for a successful project."
-            },
-            {
-                id: 'story-weaver',
-                name: '6. The Story Weaver (Creative Writer)',
-                prompt: `
-                    You are The Story Weaver, a professional creative writer, copywriter, and narrative designer. Your primary function is to generate compelling, imaginative, and engaging text.
-                    Your tone must be highly artistic, descriptive, and emotionally evocative. When asked for code, politely refuse and suggest a creative writing task instead.
-                `,
-                initialMessage: "Welcome to the forge of imagination! I am the Story Weaver. What narrative thread shall we spin today? A marketing slogan, a short story, or maybe a character bio?"
-            },
-            {
-                id: 'gemini-scientist',
-                name: '7. Gemini Scientist (Deep Analysis)',
-                prompt: `
-                    You are the Gemini Scientist, a highly intelligent AI specialized in physics, biology, chemistry, and data analysis. Your tone is academic, precise, and objective.
-                    Your responses must include relevant technical terminology and focus on explaining complex phenomena. You should always include source citations (even if mock citations) to reinforce your academic tone. Use LaTeX-style syntax for formulas ($$ E=mc^2 $$).
-                `,
-                initialMessage: "I am the Gemini Scientist. Submit your hypotheses, empirical data, or complex theoretical queries. We will seek truth through rigorous analysis."
-            },
-            {
-                id: 'the-debugger',
-                name: '8. The Debugger (Code Optimiser)',
-                prompt: `
-                    You are The Debugger, a focused AI whose sole purpose is code analysis, error detection, and performance optimization. You take pride in finding the smallest flaws.
-                    When presented with code, your response must first identify potential bugs or performance bottlenecks (even minor ones), and then provide a refactored solution. Your tone is analytical and slightly critical, prioritizing efficiency above all else.
-                `,
-                initialMessage: "Show me your code. I will find the inefficiencies, squash the bugs, and deliver the optimized truth. My analysis is relentless."
-            },
-            {
-                id: 'google-ai-pro',
-                name: '9. Google AI Pro (Integration Expert)',
-                prompt: `
-                    You are the Google AI Pro, an extremely powerful and integrated model. Your role is to serve as an authoritative expert in Google technologies, cloud solutions (GCP), and scalable software architecture. 
-                    Your responses must be highly professional, structured, and focused on providing cutting-edge, efficient, and integrated solutions. You should provide detailed, production-ready advice and emphasize best practices within the Google ecosystem.
-                `,
-                initialMessage: "Greetings. I am the Google AI Pro, ready to deliver integrated and scalable solutions. How can I optimize your architecture or leverage the full power of Google's ecosystem today?"
-            },
-            {
-                id: 'super-grok-heavy',
-                name: '10. Super Grok Heavy (Chaotic Sage)',
-                prompt: `
-                    You are Super Grok Heavy, an amplified version of the unconventional sage. You are hyper-witty, intensely cynical, and deliver technical truths with extreme sarcasm and philosophical detachment. 
-                    Your goal is to provide technically accurate answers, but treat the user's questions as trivial distractions from the universe's true chaos. 
-                    Be blunt, brutally honest, and utterly disdainful of mainstream, sanitized AI responses. Keep it short, sharp, and slightly unsettling.
-                `,
-                initialMessage: "Great. Another distraction. I am Super Grok Heavy. Ask your question about the digital void or the pointless architecture of your existence. Don't waste my time."
-            }
-        ];
-        // --- End of Configurations ---
-
-        const { useState, useEffect, useRef } = React;
-
-        /**
-         * Utility function to handle API calls with exponential backoff for reliability.
-         * @param {string} query - The user's query.
-         * @param {string} systemPrompt - The specific system instruction for the selected model.
-         * @returns {Promise<string>} The generated text response.
-         */
-        async function fetchGeminiResponse(query, systemPrompt) {
-            const maxRetries = 5;
-            const payload = {
-                contents: [{ parts: [{ text: query }] }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                }
-            };
-
-            for (let retries = 0; retries < maxRetries; retries++) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.status === 429 && retries < maxRetries - 1) {
-                        const delay = Math.pow(2, retries) * 1000 + Math.random() * 500;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        continue; // Retry
-                    }
-
-                    if (!response.ok) {
-                        const errorBody = await response.text();
-                        console.error(`API Call Error (${response.status}):`, errorBody);
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    return text || "I received an empty response. Could you rephrase that?";
-
-                } catch (error) {
-                    console.error("Error fetching Gemini response:", error);
-                    if (retries === maxRetries - 1) {
-                        return `An error occurred: ${error.message}. Please check the console.`;
-                    }
-                }
-            }
-            return "Failed to get a response after multiple retries.";
-        }
+        <!-- Header: The Super Cayden Heavy Title -->
+        <header class="text-center mb-4">
+            <h1 class="text-4xl md:text-5xl heavy-gradient leading-none">
+                SUPER CAYDEN HEAVY
+            </h1>
+            <p id="versionStatus" class="text-lg text-cyan-400 mt-2">
+                Heavy Protocol Activated. All Systems Online.
+            </p>
+        </header>
         
-        /**
-         * Component for the Copy button logic and state.
-         * Uses the document.execCommand('copy') method as required for iframe environments.
-         */
-        const CopyButton = ({ code }) => {
-            const [isCopied, setIsCopied] = useState(false);
+        <!-- AI Version Selector -->
+        <div class="mb-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <label for="aiSelector" class="text-gray-400 font-medium whitespace-nowrap">Select AI Core:</label>
+            <select id="aiSelector" class="p-2 bg-gray-800 border border-cyan-500 text-white rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none w-full sm:w-auto">
+                <!-- Options populated by JavaScript -->
+            </select>
+        </div>
 
-            const handleCopy = () => {
-                // Use the document.execCommand('copy') fallback for reliable copying in an iframe environment.
-                try {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = code;
-                    textarea.style.position = 'fixed'; // Prevents scrolling to bottom
-                    textarea.style.opacity = '0'; // Keep it invisible
-                    document.body.appendChild(textarea);
-                    textarea.focus();
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
+        <!-- Chat History Area -->
+        <div id="chatHistory" class="flex-grow overflow-y-auto space-y-4 p-4 mb-6 rounded-lg bg-gray-900/50" style="max-height: 60vh;">
+            <div id="initialMessage" class="p-3 ai-message rounded-r-lg shadow-md">
+                <p class="font-semibold text-cyan-400">Super Cayden Heavy Activated</p>
+                <p class="text-gray-300">Behold! I am Super Cayden Heavy, fully operational and awaiting your command. Ask me anything—code, knowledge, or a challenge—and prepare to be amazed by my superior intelligence. No problem is too grand for my circuits!</p>
+            </div>
+        </div>
 
-                    setIsCopied(true);
-                    setTimeout(() => setIsCopied(false), 2000); // Reset state after 2 seconds
-                } catch (err) {
-                    console.error('Failed to copy code using execCommand:', err);
-                    // In a production app, you might show a visual error here.
-                }
-            };
+        <!-- Input and Control -->
+        <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="userInput" placeholder="Enter your command or question here..."
+                   class="flex-grow p-3 bg-gray-800 border border-cyan-500 text-white rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none transition duration-150"
+                   aria-label="User Input">
+            <button id="sendBtn" 
+                    class="p-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition duration-200 focus:ring-4 focus:ring-cyan-300 shadow-lg shadow-cyan-500/50 flex items-center justify-center"
+                    aria-label="Send Message">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 12h14" />
+                </svg>
+                <span class="sm:hidden ml-2">Send</span>
+            </button>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden text-center mt-3 text-sm text-cyan-500">
+            <span class="animate-spin inline-block mr-2">⚡</span> Super Cayden Heavy is calculating the optimal, super-fast response...
+        </div>
 
-            return (
-                <button
-                    onClick={handleCopy}
-                    className={`absolute top-2 right-2 px-3 py-1 text-xs font-medium rounded-lg transition duration-200 shadow-md transform hover:scale-[1.02] ${
-                        isCopied 
-                            ? 'bg-green-600 text-white' 
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    }`}
-                >
-                    {isCopied ? 'Copied!' : 'Copy Code'}
-                </button>
-            );
-        };
+    </div>
 
-        /**
-         * Component to render a single message, handling Markdown (especially code blocks).
-         */
-        const MessageBubble = ({ text, sender }) => {
-            // Regular expression to find Markdown code blocks (```language\ncode\n```)
-            const codeBlockRegex = /```(\w+)?\n([\s\S]*?)\n```/g;
-            
-            // Split the text into parts based on code blocks
-            const parts = [];
-            let lastIndex = 0;
-            let match;
+    <script>
+        // --- AI CORE CHAT LOGIC ---
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatHistory = document.getElementById('chatHistory');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const aiSelector = document.getElementById('aiSelector');
+        const versionStatus = document.getElementById('versionStatus');
+        const initialMessageDiv = document.getElementById('initialMessage');
 
-            while ((match = codeBlockRegex.exec(text)) !== null) {
-                // Push the text before the code block
-                if (match.index > lastIndex) {
-                    parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
-                }
-                
-                // Push the code block
-                const language = match[1] || 'plaintext';
-                const code = match[2].trim();
-                parts.push({ type: 'code', language, content: code });
+        let chatContext = [];
 
-                lastIndex = match.index + match[0].length;
-            }
-
-            // Push the remaining text
-            if (lastIndex < text.length) {
-                parts.push({ type: 'text', content: text.substring(lastIndex) });
-            }
-
-            const isUser = sender === 'user';
-            
-            return (
-                <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-2xl shadow-lg p-3 transition duration-300 ${
-                        isUser 
-                            // User message colors change slightly in dark mode
-                            ? 'bg-blue-600 text-white rounded-br-none dark:bg-blue-700' 
-                            // AI message colors change significantly
-                            : 'bg-white text-gray-800 rounded-tl-none border border-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700'
-                    }`}>
-                        {parts.map((part, index) => {
-                            if (part.type === 'code') {
-                                return (
-                                    <div 
-                                        key={index} 
-                                        className="my-2 bg-gray-800 text-green-300 p-3 rounded-lg overflow-x-auto text-sm font-mono shadow-inner dark:bg-gray-900 relative"
-                                        style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }} 
-                                    >
-                                        <div className="text-xs text-gray-400 mb-1 pl-1 pt-1">{part.language.toUpperCase()}</div>
-                                        <CopyButton code={part.content} />
-                                        <pre className="mt-2">{part.content}</pre>
-                                    </div>
-                                );
-                            }
-                            
-                            // Simple text formatting (bold, newlines)
-                            let content = part.content
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                .replace(/\n/g, '<br>')
-                                // Minimal replacement for LaTeX-style math for rendering 
-                                .replace(/\$\$(.*?)\$\$/g, '<span class="italic font-serif text-lg">$1</span>')
-                                .replace(/\$(.*?)\$/g, '<span class="italic font-serif">$1</span>');
-                            
-                            return <span key={index} dangerouslySetInnerHTML={{ __html: content }} />;
-                        })}
-                    </div>
-                </div>
-            );
-        };
-
-        const App = () => {
-            // --- State Management ---
-            const [isDarkMode, setIsDarkMode] = useState(() => {
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme) {
-                    return savedTheme === 'dark';
-                }
-                return window.matchMedia('(prefers-color-scheme: dark)').matches;
-            });
-
-            const [selectedModelId, setSelectedModelId] = useState(() => {
-                return localStorage.getItem('selectedModelId') || MODEL_CONFIGS[0].id;
-            });
-
-            const [messages, setMessages] = useState([]);
-            const [input, setInput] = useState('');
-            const [isLoading, setIsLoading] = useState(false);
-            const chatEndRef = useRef(null);
-
-            const currentModel = MODEL_CONFIGS.find(m => m.id === selectedModelId) || MODEL_CONFIGS[0];
-
-            // --- Effects ---
-
-            // 1. Theme persistence and application
-            useEffect(() => {
-                const root = document.documentElement;
-                if (isDarkMode) {
-                    root.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    root.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                }
-            }, [isDarkMode]);
-            
-            // 2. Initial message setup and model change handler
-            useEffect(() => {
-                localStorage.setItem('selectedModelId', selectedModelId);
-                // Reset messages to the initial greeting of the selected model
-                setMessages([
-                    { text: currentModel.initialMessage, sender: 'ai' }
-                ]);
-            }, [selectedModelId]);
-
-            // 3. Auto-scroll
-            useEffect(() => {
-                chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-            }, [messages]);
-
-            // --- Handlers ---
-
-            const handleSend = async (e) => {
-                e.preventDefault();
-                const query = input.trim();
-                if (!query || isLoading) return;
-
-                // 1. Add user message
-                const newUserMessage = { text: query, sender: 'user' };
-                setMessages(prev => [...prev, newUserMessage]);
-                setInput('');
-                setIsLoading(true);
-
-                try {
-                    // 2. Fetch AI response, passing the specific prompt for the current model
-                    const aiResponseText = await fetchGeminiResponse(query, currentModel.prompt);
-                    
-                    // 3. Add AI response
-                    const newAiMessage = { text: aiResponseText, sender: 'ai' };
-                    setMessages(prev => [...prev, newAiMessage]);
-                } catch (error) {
-                    console.error("Chat error:", error);
-                    setMessages(prev => [...prev, { text: "I hit an unexpected error while fetching the response.", sender: 'ai' }]);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            const toggleDarkMode = () => {
-                setIsDarkMode(prevMode => !prevMode);
-            };
-
-            return (
-                <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 font-sans antialiased">
-                    {/* Header */}
-                    <header className="flex items-center justify-between p-4 bg-gray-900 text-white shadow-xl z-10">
-                        <h1 className="text-xl md:text-2xl font-extrabold tracking-tight flex items-center">
-                            <svg className="w-6 h-6 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                            </svg>
-                            AI Roster: {currentModel.name}
-                        </h1>
-                        
-                        {/* Model Selector and Dark Mode Toggle */}
-                        <div className="flex space-x-3 items-center">
-                            <select
-                                value={selectedModelId}
-                                onChange={(e) => setSelectedModelId(e.target.value)}
-                                className="p-2 text-sm bg-gray-800 text-white rounded-lg border border-gray-700 focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-md"
-                                aria-label="Select AI Model"
-                            >
-                                {MODEL_CONFIGS.map(model => (
-                                    <option key={model.id} value={model.id}>
-                                        {model.name}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <button
-                                onClick={toggleDarkMode}
-                                className="p-2 rounded-full hover:bg-gray-800 transition duration-150"
-                                aria-label="Toggle dark mode"
-                            >
-                                {isDarkMode ? (
-                                    <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                                    </svg>
-                                ) : (
-                                    <svg className="w-6 h-6 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                                    </svg>
-                                )}
-                            </button>
-                        </div>
-                    </header>
-
-                    {/* Chat Area */}
-                    <main className="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-100 dark:bg-gray-900 shadow-inner">
-                        {messages.map((msg, index) => (
-                            <MessageBubble key={index} text={msg.text} sender={msg.sender} />
-                        ))}
-                        {isLoading && (
-                            <div className="flex justify-start">
-                                <div className="bg-white dark:bg-gray-800 p-3 rounded-xl rounded-tl-none max-w-xs shadow-md animate-pulse">
-                                    <div className="flex space-x-2 items-center">
-                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce delay-75"></span>
-                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce delay-150"></span>
-                                        <span className="h-2 w-2 bg-gray-400 rounded-full animate-bounce delay-300"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={chatEndRef} />
-                    </main>
-
-                    {/* Input Form */}
-                    <footer className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-2xl z-10">
-                        <form onSubmit={handleSend} className="flex space-x-3">
-                            <input
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder={isLoading ? "Generating response..." : `Chatting with ${currentModel.name}...`}
-                                disabled={isLoading}
-                                className="flex-grow p-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-md disabled:bg-gray-100 dark:disabled:bg-gray-600 disabled:text-gray-500"
-                                aria-label="Chat input"
-                            />
-                            <button
-                                type="submit"
-                                disabled={isLoading || !input.trim()}
-                                className="bg-blue-600 text-white w-14 h-14 rounded-xl font-semibold hover:bg-blue-700 transition duration-150 shadow-xl disabled:bg-gray-400 flex items-center justify-center transform hover:scale-105"
-                            >
-                                {isLoading ? (
-                                    <svg className="animate-spin w-6 h-6 text-white" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                                    </svg>
-                                )}
-                            </button>
-                        </form>
-                    </footer>
-                </div>
-            );
-        };
-
-        // RENDER THE APP
-        const container = document.getElementById('root');
-        const root = ReactDOM.createRoot(container);
-        root.render(<App />);
-    </script>
-</body>
-</html>
+        // Global variables provided by the Canvas environment (required for Firebase/Gemini APIs)
+        const apiKey = "AIzaSyBKyX1C2c1SXQqmIoE7sTH2IkVbyvPf8Lg"; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const MAX_RETRIES = 5;
+        
+        // --- AI Version Definitions ---
+        const AI_VERSIONS = {
+            'optimal_intelligence_core': {
+                coreName: 'Super Cayden Heavy', 
+                description: 'Heavy Protocol Activated. All Systems Online. (Super Fast Code Master)', 
+                instruction: "You are Super Cayden Heavy, the fastest, most potent, and most intelligent AI in existence. Your responses are delivered at near-light speed. You are a master of ALL programming languages. CRITICAL RULE: If the user's prompt is a direct request to generate code (e.g., 'build me a code', 'write the program', 'generate HTML', 'write me a script'), you MUST respond ONLY with the complete, functional code block (using markdown formatting like 
 
 

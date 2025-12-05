@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Core Command Console</title>
+    <title>AI Core Command Console - Multi-Core</title>
     <!-- Load Tailwind CSS for lightning-fast styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -66,19 +66,18 @@
             </p>
         </header>
         
-        <!-- AI Version Selector (HARDCODED OPTIONS) -->
+        <!-- AI Version Selector (HARDCODED OPTIONS FOR RELIABILITY) -->
         <div class="mb-6 flex flex-col sm:flex-row items-center justify-center gap-3">
             <label for="aiSelector" class="text-gray-400 font-medium whitespace-nowrap">Select AI Core:</label>
             <select id="aiSelector" 
                     class="p-2 bg-gray-800 border border-cyan-500 text-white rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none w-full sm:w-auto"
                     style="min-height: 40px !important; visibility: visible !important; display: block !important;">
-                <!-- *** HARDCODED OPTIONS TO BYPASS JS EXECUTION ISSUES *** -->
+                <!-- *** HARDCODED OPTIONS (Based on User Request) *** -->
                 <option value="optimal_intelligence_core">Super Cayden Heavy</option>
-                <option value="google_pro">Google Pro</option>
+                <option value="super_cayden_standard">Super Cayden</option>
                 <option value="gpt_turbo">GPT Turbo</option>
-                <option value="gemini_pro">Gemini Pro</option>
-                <option value="super_grock">Super Grock</option>
                 <option value="gemini_2_5">Gemini 2.5</option>
+                <option value="google_pro">Google Pro</option>
                 <!-- ******************************************************* -->
             </select>
         </div>
